@@ -25,6 +25,7 @@ args = ["Deploying workspace"]
 dependencies = ["build"]
 
 [tasks.build]
+clear = true
 command = "echo"
 args = ["Building workspace"]
 dependencies = ["update-workspace"]
