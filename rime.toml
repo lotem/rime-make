@@ -78,31 +78,31 @@ args = ["Customizing:", "${RECIPE}"]
 
 [tasks.Rx-zeug]
 extend = "recipe"
-env = {"RECIPE" = "zeug"}
+env = {RECIPE = "zeug"}
 
 [tasks.Rx-samedi]
 extend = "recipe"
-env = {"RECIPE" = "samedi"}
+env = {RECIPE = "samedi"}
 
 [tasks.Rx-lundi]
 extend = "recipe"
-env = {"RECIPE" = "lundi"}
+env = {RECIPE = "lundi"}
 
 [tasks.Rx-mardi]
 extend = "recipe"
-env = {"RECIPE" = "mardi"}
+env = {RECIPE = "mardi"}
 
 [tasks.customize-samedi]
 dependencies = ["Rx-samedi", "Rx-zeug"]
-env = {"RECIPE" = "samedi"}
+env = {RECIPE = "samedi"}
 extend = "customize"
 
 [tasks.customize-lundi]
 dependencies = ["Rx-lundi", "Rx-zeug"]
-env = {"RECIPE" = "lundi"}
+env = {RECIPE = "lundi"}
 extend = "customize"
 
 [tasks.customize-mardi]
 dependencies = ["Rx-mardi", "Rx-zeug"]
-env = {"RECIPE" = "mardi"}
+env = {RECIPE = "mardi"}
 extend = "customize"
