@@ -41,18 +41,11 @@ run_task = "fill-prescription"
 command = "echo"
 args = ["Initializing workspace"]
 
+# task.recipes to be defined in user.toml
 [tasks.fill-prescription]
 run_task = "recipes"
 
-[tasks.recipes]
-dependencies = [
-  "Rx-samedi",
-  "Rx-mardi",
-  "customize-samedi",
-  "customize-lundi",
-  "customize-mardi",
-]
-
+# Standard procedure to take a recipe.
 [tasks.recipe]
 run_task = { "name" = [
   "download-recipe",
@@ -62,47 +55,16 @@ run_task = { "name" = [
 
 [tasks.download-recipe]
 command = "echo"
-args = ["Downloading:", "${RECIPE}"]
+args = ["Downloading ${RECIPE} from ${GIT_REPO}"]
 
 [tasks.install-recipe]
 command = "echo"
-args = ["Installing:", "${RECIPE}"]
+args = ["Installing ${RECIPE}"]
 
 [tasks.test-recipe]
 command = "echo"
-args = ["Testing:", "${RECIPE}"]
+args = ["Testing ${RECIPE}"]
 
 [tasks.customize]
 command = "echo"
-args = ["Customizing:", "${RECIPE}"]
-
-[tasks.Rx-zeug]
-extend = "recipe"
-env = {RECIPE = "zeug"}
-
-[tasks.Rx-samedi]
-extend = "recipe"
-env = {RECIPE = "samedi"}
-
-[tasks.Rx-lundi]
-extend = "recipe"
-env = {RECIPE = "lundi"}
-
-[tasks.Rx-mardi]
-extend = "recipe"
-env = {RECIPE = "mardi"}
-
-[tasks.customize-samedi]
-dependencies = ["Rx-samedi", "Rx-zeug"]
-env = {RECIPE = "samedi"}
-extend = "customize"
-
-[tasks.customize-lundi]
-dependencies = ["Rx-lundi", "Rx-zeug"]
-env = {RECIPE = "lundi"}
-extend = "customize"
-
-[tasks.customize-mardi]
-dependencies = ["Rx-mardi", "Rx-zeug"]
-env = {RECIPE = "mardi"}
-extend = "customize"
+args = ["Customizing ${TARGET}"]

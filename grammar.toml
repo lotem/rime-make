@@ -1,0 +1,16 @@
+# grammar recipes
+
+extend = "rime.toml"
+
+[tasks.Rx-octagram-config]
+extend = "recipe"
+env = {RECIPE = "lotem/rime-octagram-data", GIT_REPO="https://github.com/lotem/rime-octagram-data"}
+
+[tasks.Rx-octagram-data-hant]
+extend = "recipe"
+env = {RECIPE = "lotem/rime-octagram-data@hant", GIT_REPO="https://github.com/lotem/rime-octagram-data", GIT_BRANCH="hant"}
+
+[tasks.use-grammar]
+command = "echo"
+args = ["Use grammar with ${SCHEMA}"]
+dependencies = [ "Rx-octagram-config", "Rx-octagram-data-hant" ]

@@ -1,0 +1,22 @@
+# selected rime recipes by user
+
+extend = [
+  { path = "rime.toml" },
+  { path = "plum-preset-recipes.toml" },
+  { path = "grammar.toml" },
+]
+
+[tasks.recipes]
+dependencies = [
+  "Rx-prelude",
+  "Rx-luna-pinyin",
+  "customize-luna-pinyin",
+]
+
+[tasks.customize-luna-pinyin]
+env = {SCHEMA = "luna_pinyin"}
+run_task = { name = [
+  # "use-emoji",
+  "use-grammar",
+  # "use-symbols",
+] }

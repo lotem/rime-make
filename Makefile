@@ -1,2 +1,2 @@
 all:
-	cargo make --makefile rime.toml
+	cargo make --makefile user.toml
