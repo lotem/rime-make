@@ -1,2 +1,4 @@
+LOGLEVEL = error
+
 all:
-	cargo make --makefile user.toml
+	cargo make --loglevel $(LOGLEVEL) --makefile user.toml
