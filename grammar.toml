@@ -12,5 +12,5 @@ env = {RECIPE = "lotem/rime-octagram-data@hant", GIT_REPO="https://github.com/lo
 
 [tasks.use-grammar]
 command = "echo"
-args = ["Use grammar with ${SCHEMA}"]
+args = ["rime_patch", "${SCHEMA}", "grammar", "{__include: grammar:/hant}"]
 dependencies = [ "Rx-octagram-config", "Rx-octagram-data-hant" ]

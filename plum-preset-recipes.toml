@@ -4,16 +4,16 @@ extend = "rime.toml"
 
 [tasks.Rx-prelude]
 extend = "recipe"
-env = {RECIPE = "prelude", GIT_REPO="https://github.com/rime/rime-prelude"}
+env = {RECIPE = "prelude", GIT_REPO="https://github.com/rime/rime-prelude.git"}
 
 [tasks.Rx-luna-pinyin]
 extend = "recipe"
-env = {RECIPE = "luna-pinyin", GIT_REPO="https://github.com/rime/rime-luna-pinyin"}
+env = {RECIPE = "luna-pinyin", GIT_REPO="https://github.com/rime/rime-luna-pinyin.git"}
 
 [tasks.Rx-terra-pinyin]
 extend = "recipe"
-env = {RECIPE = "terra-pinyin", GIT_REPO="https://github.com/rime/rime-terra-pinyin"}
+env = {RECIPE = "terra-pinyin", GIT_REPO="https://github.com/rime/rime-terra-pinyin.git"}
 
 [tasks.Rx-cangjie]
 extend = "recipe"
-env = {RECIPE = "cangjie", GIT_REPO="https://github.com/rime/rime-cangjie"}
+env = {RECIPE = "cangjie", GIT_REPO="https://github.com/rime/rime-cangjie.git"}

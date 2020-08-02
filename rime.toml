@@ -3,31 +3,53 @@ min_version = "0.30.6"
 additional_profiles = ["ibus-rime", "fcitx-rime", "weasel", "squirrel"]
 
 [env]
+DOWNLOAD_DIR = "pkg"
+SOURCE_DIR = "src"
+RIME_SHARED_DATA_DIR = "${SOURCE_DIR}"
+RIME_USER_DATA_DIR = "${SOURCE_DIR}"
+STAGING_DIR = "stage"
+TARGET_DIR = "target"
 
 [env.ibus-rime]
+RIME_SHARED_DATA_DIR = "/usr/share/rime-data"
+RIME_USER_DATA_DIR =  "${HOME}/.config/ibus/rime"
+SOURCE_DIR = "${RIME_USER_DATA_DIR}"
+STAGING_DIR = "${RIME_USER_DATA_DIR}"
 
 [env.fcitx-rime]
+RIME_SHARED_DATA_DIR = "/usr/share/rime-data"
+RIME_USER_DATA_DIR =  "${HOME}/.config/fcitx/rime"
+SOURCE_DIR = "${RIME_USER_DATA_DIR}"
+STAGING_DIR = "${RIME_USER_DATA_DIR}"
 
 [env.weasel]
+RIME_SHARED_DATA_DIR = "data"
+RIME_USER_DATA_DIR =  "${APPDATA}/Rime"
+SOURCE_DIR = "${RIME_USER_DATA_DIR}"
+STAGING_DIR = "${RIME_USER_DATA_DIR}"
 
 [env.squirrel]
+RIME_SHARED_DATA_DIR = "/Library/Input Methods/Squirrel.app/Contents/SharedSupport"
+RIME_USER_DATA_DIR =  "${HOME}/Library/Rime"
+SOURCE_DIR = "${RIME_USER_DATA_DIR}"
+STAGING_DIR = "${RIME_USER_DATA_DIR}"
 
 # This task overrides the predefined |default| cargo-make task.
 [tasks.default]
 clear = true
-run_task = "deploy"
+run_task = "build"
 
-# Deploys Rime data files.
-# By default, copy the output of a successful build to $RIME_USER_DATA_DIR.
+# Deploys a Rime data build to a Rime client.
+# By default, copy the output of a successful build to $TARGET_DIR.
 [tasks.deploy]
 command = "echo"
-args = ["Deploying workspace"]
+args = ["cp", "-a", "-T", "${STAGING_DIR}", "${TARGET_DIR}"]
 dependencies = ["build"]
 
 [tasks.build]
 clear = true
 command = "echo"
-args = ["Building workspace"]
+args = ["rime_deployer", "--build", "${RIME_USER_DATA_DIR}", "${RIME_SHARED_DATA_DIR}", "${STAGING_DIR}"]
 dependencies = ["update-workspace"]
 
 [tasks.update-workspace]
@@ -41,9 +63,11 @@ run_task = "fill-prescription"
 command = "echo"
 args = ["Initializing workspace"]
 
-# task.recipes to be defined in user.toml
 [tasks.fill-prescription]
 run_task = "recipes"
+
+# a list of user selected recipes to be extended in user.toml.
+[task.recipes]
 
 # Standard procedure to take a recipe.
 [tasks.recipe]
@@ -55,16 +79,14 @@ run_task = { "name" = [
 
 [tasks.download-recipe]
 command = "echo"
-args = ["Downloading ${RECIPE} from ${GIT_REPO}"]
+args = ["rime", "download", "${RECIPE}", "--repo", "${GIT_REPO}"]
 
 [tasks.install-recipe]
 command = "echo"
-args = ["Installing ${RECIPE}"]
+args = ["rime", "install", "${RECIPE}"]
 
 [tasks.test-recipe]
 command = "echo"
-args = ["Testing ${RECIPE}"]
+args = ["rime", "test", "${RECIPE}"]
 
 [tasks.customize]
-command = "echo"
-args = ["Customizing ${TARGET}"]
