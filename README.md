@@ -24,8 +24,8 @@ Rime 輸入法配方構建工具
 
 ## directory structure
 
-`pkg` :: downloaded packages
-`bin` :: Rime executables
-`lib` :: Rime libraries and plugins
-`src` :: unpacked source files
-`stage` :: assembled outuput files to be deployed to a Rime client
+  - `pkg` :: downloaded packages
+  - `bin` :: Rime executables
+  - `lib` :: Rime libraries and plugins
+  - `src` :: unpacked source files
+  - `stage` :: assembled outuput files to be deployed to a Rime client
