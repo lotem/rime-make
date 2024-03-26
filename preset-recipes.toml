@@ -1,19 +1,23 @@
-# rime/plum preset recipes
+# rime/plum 預設配方
 
 extend = "rime.toml"
 
 [tasks.Rx-prelude]
+description = "℞ 默認配置"
 extend = "recipe"
 env = {RECIPE = "prelude", GIT_REPO="https://github.com/rime/rime-prelude.git"}
 
 [tasks.Rx-luna-pinyin]
+description = "℞ 朙月拼音"
 extend = "recipe"
 env = {RECIPE = "luna-pinyin", GIT_REPO="https://github.com/rime/rime-luna-pinyin.git"}
 
 [tasks.Rx-terra-pinyin]
+description = "℞ 地球拼音"
 extend = "recipe"
 env = {RECIPE = "terra-pinyin", GIT_REPO="https://github.com/rime/rime-terra-pinyin.git"}
 
 [tasks.Rx-cangjie]
+description = "℞ 倉頡五代"
 extend = "recipe"
 env = {RECIPE = "cangjie", GIT_REPO="https://github.com/rime/rime-cangjie.git"}

@@ -1,3 +1,5 @@
+# Rime 配方管理器 基礎任務定義
+
 [config]
 min_version = "0.30.6"
 additional_profiles = ["ibus-rime", "fcitx-rime", "weasel", "squirrel"]
@@ -36,41 +38,42 @@ STAGING_DIR = "${RIME_USER_DATA_DIR}"
 
 # This task overrides the predefined |default| cargo-make task.
 [tasks.default]
+description = "起始目標"
 clear = true
 run_task = "build"
 
-# Deploys a Rime data build to a Rime client.
-# By default, copy the output of a successful build to $TARGET_DIR.
 [tasks.deploy]
+description = "部署輸入法數據到 TARGET_DIR 變量所指的位置，爲輸入法客戶端所用"
 command = "echo"
 args = ["cp", "-a", "-T", "${STAGING_DIR}", "${TARGET_DIR}"]
 dependencies = ["build"]
 
 [tasks.build]
+description = "構建輸入法數據，將結果文件存入 STAGING_DIR"
 clear = true
 command = "echo"
 args = ["rime_deployer", "--build", "${RIME_USER_DATA_DIR}", "${RIME_SHARED_DATA_DIR}", "${STAGING_DIR}"]
 dependencies = ["update-workspace"]
 
 [tasks.update-workspace]
+description = "更新調製配方工作區"
 dependencies = ["init-workspace"]
 run_task = "fill-prescription"
 
-# Initializes a Rime user's workspace.
-# This task is for operations that have to be done before taking Rime recipes.
-# For example, to clone user's personal configuration from a Git repository.
 [tasks.init-workspace]
+description = "預備調製配方工作區。爲抓取配方前的工作預留的步驟，例如在此步驟拉取用家的個人配置倉庫"
 command = "echo"
 args = ["Initializing workspace"]
 
 [tasks.fill-prescription]
+description = "照單抓取配方"
 run_task = "recipes"
 
-# a list of user selected recipes to be extended in user.toml.
-[task.recipes]
+[tasks.recipes]
+description = "由用家擬定的配方清單。請在 user.toml 文件中展開定義"
 
-# Standard procedure to take a recipe.
 [tasks.recipe]
+description = "抓取配方。此爲標準流程，請在具體配方的任務中展開定義"
 run_task = { "name" = [
   "download-recipe",
   "install-recipe",
@@ -78,15 +81,19 @@ run_task = { "name" = [
 ] }
 
 [tasks.download-recipe]
+description = "下載配方包"
 command = "echo"
 args = ["rime", "download", "${RECIPE}", "--repo", "${GIT_REPO}"]
 
 [tasks.install-recipe]
+description = "安裝配方文件"
 command = "echo"
 args = ["rime", "install", "${RECIPE}"]
 
 [tasks.test-recipe]
+description = "測試配方"
 command = "echo"
 args = ["rime", "test", "${RECIPE}"]
 
 [tasks.customize]
+description = "自定義"

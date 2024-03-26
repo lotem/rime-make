@@ -3,14 +3,17 @@
 extend = "rime.toml"
 
 [tasks.Rx-octagram-config]
+description = "℞ 八股文語言模型·配置信息"
 extend = "recipe"
 env = {RECIPE = "lotem/rime-octagram-data", GIT_REPO="https://github.com/lotem/rime-octagram-data"}
 
 [tasks.Rx-octagram-data-hant]
+description = "℞ 八股文語言模型·傳統漢字"
 extend = "recipe"
 env = {RECIPE = "lotem/rime-octagram-data@hant", GIT_REPO="https://github.com/lotem/rime-octagram-data", GIT_BRANCH="hant"}
 
 [tasks.use-grammar]
+description = "℞ 配置補丁：在方案中啓用八股文語言模型"
 command = "echo"
 args = ["rime_patch", "${SCHEMA}", "grammar", "{__include: grammar:/hant}"]
 dependencies = [ "Rx-octagram-config", "Rx-octagram-data-hant" ]
