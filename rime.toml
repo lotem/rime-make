@@ -16,25 +16,25 @@ TARGET_DIR = "target"
 RIME_SHARED_DATA_DIR = "/usr/share/rime-data"
 RIME_USER_DATA_DIR =  "${HOME}/.config/ibus/rime"
 SOURCE_DIR = "${RIME_USER_DATA_DIR}"
-STAGING_DIR = "${RIME_USER_DATA_DIR}"
+STAGING_DIR = "${RIME_USER_DATA_DIR}/build"
 
 [env.fcitx-rime]
 RIME_SHARED_DATA_DIR = "/usr/share/rime-data"
 RIME_USER_DATA_DIR =  "${HOME}/.config/fcitx/rime"
 SOURCE_DIR = "${RIME_USER_DATA_DIR}"
-STAGING_DIR = "${RIME_USER_DATA_DIR}"
+STAGING_DIR = "${RIME_USER_DATA_DIR}/build"
 
 [env.weasel]
 RIME_SHARED_DATA_DIR = "data"
 RIME_USER_DATA_DIR =  "${APPDATA}/Rime"
 SOURCE_DIR = "${RIME_USER_DATA_DIR}"
-STAGING_DIR = "${RIME_USER_DATA_DIR}"
+STAGING_DIR = "${RIME_USER_DATA_DIR}/build"
 
 [env.squirrel]
 RIME_SHARED_DATA_DIR = "/Library/Input Methods/Squirrel.app/Contents/SharedSupport"
 RIME_USER_DATA_DIR =  "${HOME}/Library/Rime"
 SOURCE_DIR = "${RIME_USER_DATA_DIR}"
-STAGING_DIR = "${RIME_USER_DATA_DIR}"
+STAGING_DIR = "${RIME_USER_DATA_DIR}/build"
 
 # This task overrides the predefined |default| cargo-make task.
 [tasks.default]
@@ -83,12 +83,12 @@ run_task = { "name" = [
 [tasks.download-recipe]
 description = "下載配方包"
 command = "echo"
-args = ["rime", "download", "${RECIPE}", "--repo", "${GIT_REPO}"]
+args = ["rime", "download", "${RECIPE}"]
 
 [tasks.install-recipe]
 description = "安裝配方文件"
 command = "echo"
-args = ["rime", "install", "${RECIPE}"]
+args = ["rime", "install", "--no-download", "${RECIPE}"]
 
 [tasks.test-recipe]
 description = "測試配方"
