@@ -27,5 +27,8 @@ Rime 輸入法配方構建工具
   - `pkg` :: downloaded packages
   - `bin` :: Rime executables
   - `lib` :: Rime libraries and plugins
-  - `src` :: unpacked source files
-  - `stage` :: assembled outuput files to be deployed to a Rime client
+  - `src` :: unpacked source files (compile-time inputs)
+  - `stage` :: assembled output files (reproducible runtime assets and `build/` binaries) to be tested and deployed
+  - `target` :: target directory of a Rime client where staged files are deployed
+
+詳見 [架構設計文檔](DESIGN.md)。

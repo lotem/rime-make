@@ -1,7 +1,5 @@
 # grammar recipes
 
-extend = "rime.toml"
-
 [tasks.Rx-octagram-config]
 description = "℞ 八股文語言模型·配置信息"
 extend = "recipe"

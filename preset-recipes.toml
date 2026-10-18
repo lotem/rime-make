@@ -1,7 +1,5 @@
 # rime/plum 預設配方
 
-extend = "rime.toml"
-
 [tasks.Rx-prelude]
 description = "℞ 默認配置"
 extend = "recipe"

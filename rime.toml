@@ -2,57 +2,52 @@
 
 [config]
 min_version = "0.30.6"
-additional_profiles = ["ibus-rime", "fcitx-rime", "weasel", "squirrel"]
 
 [env]
 DOWNLOAD_DIR = "pkg"
 SOURCE_DIR = "src"
-RIME_SHARED_DATA_DIR = "${SOURCE_DIR}"
-RIME_USER_DATA_DIR = "${SOURCE_DIR}"
 STAGING_DIR = "stage"
 TARGET_DIR = "target"
 
 [env.ibus-rime]
-RIME_SHARED_DATA_DIR = "/usr/share/rime-data"
-RIME_USER_DATA_DIR =  "${HOME}/.config/ibus/rime"
-SOURCE_DIR = "${RIME_USER_DATA_DIR}"
-TARGET_DIR = "${RIME_USER_DATA_DIR}/build"
+TARGET_DIR = "${HOME}/.config/ibus/rime"
 
 [env.fcitx-rime]
-RIME_SHARED_DATA_DIR = "/usr/share/rime-data"
-RIME_USER_DATA_DIR =  "${HOME}/.config/fcitx/rime"
-SOURCE_DIR = "${RIME_USER_DATA_DIR}"
-TARGET_DIR = "${RIME_USER_DATA_DIR}/build"
+TARGET_DIR = "${HOME}/.config/fcitx/rime"
 
 [env.weasel]
-RIME_SHARED_DATA_DIR = "data"
-RIME_USER_DATA_DIR =  "${APPDATA}/Rime"
-SOURCE_DIR = "${RIME_USER_DATA_DIR}"
-TARGET_DIR = "${RIME_USER_DATA_DIR}/build"
+TARGET_DIR = "${APPDATA}/Rime"
 
 [env.squirrel]
-RIME_SHARED_DATA_DIR = "/Library/Input Methods/Squirrel.app/Contents/SharedSupport"
-RIME_USER_DATA_DIR =  "${HOME}/Library/Rime"
-SOURCE_DIR = "${RIME_USER_DATA_DIR}"
-TARGET_DIR = "${RIME_USER_DATA_DIR}/build"
+TARGET_DIR = "${HOME}/Library/Rime"
+
+[env.emacs-rime]
+TARGET_DIR = { script = ["emacs --quick --batch --eval '(princ (expand-file-name \"rime\" user-emacs-directory))'"] }
 
 # This task overrides the predefined |default| cargo-make task.
 [tasks.default]
 description = "起始目標"
 clear = true
-run_task = "build"
+run_task = "test"
 
 [tasks.deploy]
 description = "部署輸入法數據到 TARGET_DIR 變量所指的位置，爲輸入法客戶端所用"
 command = "echo"
 args = ["cp", "-a", "-T", "${STAGING_DIR}", "${TARGET_DIR}"]
+dependencies = ["test"]
+
+[tasks.test]
+description = "在 STAGING_DIR 工作區中測試構建好的輸入法數據"
+clear = true
+command = "echo"
+args = ["rime", "test"]
 dependencies = ["build"]
 
 [tasks.build]
 description = "構建輸入法數據，將結果文件存入 STAGING_DIR"
 clear = true
 command = "echo"
-args = ["rime_deployer", "--build", "${RIME_USER_DATA_DIR}", "${RIME_SHARED_DATA_DIR}", "${STAGING_DIR}"]
+args = ["rime_deployer", "--build", "${SOURCE_DIR}", "${SOURCE_DIR}", "${STAGING_DIR}/build"]
 dependencies = ["update-workspace"]
 
 [tasks.update-workspace]
@@ -76,8 +71,8 @@ description = "由用家擬定的配方清單。請在 user.toml 文件中展開
 description = "抓取配方。此爲標準流程，請在具體配方的任務中展開定義"
 run_task = { "name" = [
   "download-recipe",
+  "build-recipe",
   "install-recipe",
-  "test-recipe",
 ] }
 
 [tasks.download-recipe]
@@ -85,8 +80,11 @@ description = "下載配方包"
 command = "echo"
 args = ["rime", "download", "${RECIPE}"]
 
+[tasks.build-recipe]
+description = "構建配方包（供自定義配方擴展）"
+
 [tasks.install-recipe]
-description = "安裝配方文件"
+description = "安裝配方文件（源碼寫入 SOURCE_DIR，運行時資源寫入 STAGING_DIR）"
 command = "echo"
 args = ["rime", "install", "--no-download", "${RECIPE}"]
 

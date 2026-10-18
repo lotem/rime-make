@@ -7,6 +7,9 @@ extend = [
   { path = "grammar.toml" },
 ]
 
+[env.emacs-rime]
+TARGET_DIR = "${HOME}/.config/emacs-rime"
+
 [tasks.recipes]
 dependencies = [
   "Rx-prelude",
@@ -16,6 +19,7 @@ dependencies = [
 
 [tasks.customize-luna-pinyin]
 description = "自定義：明月拼音方案的可選功能"
+dependencies = ["Rx-luna-pinyin"]
 env = {SCHEMA = "luna_pinyin"}
 run_task = { name = [
   # "use-emoji",
