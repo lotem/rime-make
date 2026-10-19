@@ -13,5 +13,5 @@ env = {RECIPE = "lotem/rime-octagram-data@hant"}
 [tasks.use-grammar]
 description = "℞ 配置補丁：在方案中啓用八股文語言模型"
 command = "echo"
-args = ["rime_patch", "${SCHEMA}", "grammar", "{__include: grammar:/hant}"]
+args = ["rime", "patch", "${SCHEMA}", "grammar", "{__include: grammar:/hant}"]
 dependencies = [ "Rx-octagram-config", "Rx-octagram-data-hant" ]

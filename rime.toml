@@ -33,7 +33,7 @@ run_task = "test"
 [tasks.deploy]
 description = "部署輸入法數據到 TARGET_DIR 變量所指的位置，爲輸入法客戶端所用"
 command = "echo"
-args = ["cp", "-a", "-T", "${STAGING_DIR}", "${TARGET_DIR}"]
+args = ["rime", "deploy"]
 dependencies = ["test"]
 
 [tasks.test]
@@ -47,7 +47,7 @@ dependencies = ["build"]
 description = "構建輸入法數據，將結果文件存入 STAGING_DIR"
 clear = true
 command = "echo"
-args = ["rime_deployer", "--build", "${SOURCE_DIR}", "${SOURCE_DIR}", "${STAGING_DIR}/build"]
+args = ["rime", "build"]
 dependencies = ["update-workspace"]
 
 [tasks.update-workspace]

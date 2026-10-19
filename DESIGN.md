@@ -44,23 +44,23 @@ flowchart LR
 
     Pkg -->|"rime install\n(解包源碼)"| Src
     Pkg -->|"rime install\n(安裝資源)"| Assets
-    Src -->|"rime_deployer --build"| Build
-    Stage -->|"rime test (驗證)\ncp -a -T (部署)"| Client
+    Src -->|"rime build"| Build
+    Stage -->|"rime test (驗證)\nrime deploy (部署)"| Client
 ```
 
 ### 1. 共享緩存與工具鏈（跨工作區複用）
-- **`bin/`、`lib/`**：打包 `librime/tools` 中的核心工具（`rime_deployer`、`rime_patch` 等）與新開發的 `rime-cli` 命令行程序及插件。
+- **`bin/`、`lib/`**：打包新開發的統一入口程序 `rime-cli`（`rime`）及 `librime` 動態庫與插件（集成了傳統 `librime/tools` 中 `rime_deployer`、`rime_patch` 的功能）。
 - **`pkg/`（`DOWNLOAD_DIR`）**：已下載配方包的本地緩存倉庫，以配方包爲單位組織目錄結構。當用家在同一機器上維護多個前端環境（如 Squirrel 與 `emacs-rime`）或在服務器上爲多用家構建處方時，`pkg/` 可跨工作區共享，無需重複下載。
 
 ### 2. 調製配方工作區（Workspace：`src/` + `stage/`）
 工作區對應單一處方與目標環境的構建實例：
 - **`src/`（`SOURCE_DIR`）—— 編譯期源文件目錄**：
-  - 存放由 `init-workspace` 拉取的用家個人配置源碼、由 `rime install` 從 `pkg/` 解包出的方案與詞典源碼（`*.schema.yaml`、`*.dict.yaml` 等），以及由 `rime_patch` 生成的方案補丁（`*.custom.yaml`）。
+  - 存放由 `init-workspace` 拉取的用家個人配置源碼、由 `rime install` 從 `pkg/` 解包出的方案與詞典源碼（`*.schema.yaml`、`*.dict.yaml`、`essay.txt` 等），以及由 `rime patch` / `rime add` 生成的方案補丁（`*.custom.yaml`）。
   - 此目錄中的文件僅作爲編譯輸入，運行中的輸入法客戶端不直接讀取 `src/`。
 - **`stage/`（`STAGING_DIR`）—— 運行時產物目錄**：
   - 匯集輸入法客戶端運行所需的**全部可重現文件**：
     1. **運行時資源文件**（位於 `stage/` 下，如八股文語言模型 `*.gram`、`opencc/*` 轉換配置與詞典、`lua/*` 腳本等）；
-    2. **編譯後二進制數據**（位於 `stage/build/` 下，由 `rime_deployer --build` 生成的 `*.table.bin`、`*.prism.bin`、`*.reverse.bin` 及合併後的 `*.schema.yaml`、`default.yaml`）。
+    2. **編譯後二進制數據**（位於 `stage/build/` 下，由 `rime build` 生成的 `*.table.bin`、`*.prism.bin`、`*.reverse.bin` 及合併後的 `*.schema.yaml`、`default.yaml`）。
   - > [!IMPORTANT]
     > 在 `rime-make` 中，`build/` 不再作爲一級概念存在，僅因 `librime` 運行時默認在 `<user_data_dir>/build/` 下查找二進制字典而在 `stage/` 內部保留該子目錄結構。`stage/` 內的所有文件均可由 `pkg/` 與 `src/` 重新構建生成。
 
@@ -82,9 +82,9 @@ flowchart LR
 
 | 配方數據類型 | 典型示例 | `pkg/` $\rightarrow$ `src/`（源碼準備） | `src/` $\rightarrow$ `stage/`（構建與組裝） |
 | :--- | :--- | :--- | :--- |
-| **純源碼配方** | `prelude`、`luna-pinyin`、`cangjie`、`lotem/rime-octagram-data`（配置） | `rime install` 解包 `*.yaml` 至 `src/`；`rime_patch` 生成 `src/*.custom.yaml` | `rime_deployer --build` 編譯生成 `stage/build/*.bin` 與 `stage/build/*.schema.yaml` |
+| **純源碼配方** | `prelude`、`luna-pinyin`、`cangjie`、`lotem/rime-octagram-data`（配置） | `rime install` 解包 `*.yaml`、`essay.txt` 至 `src/`；`rime patch` 生成 `src/*.custom.yaml` | `rime build` 編譯生成 `stage/build/*.bin` 與 `stage/build/*.schema.yaml` |
 | **預編譯資源配方** | `lotem/rime-octagram-data@hant`（含 `.gram`） | 無編譯期源碼（或僅保留元數據） | `rime install` 直接將預編譯資源文件安裝至 `stage/` |
-| **自定義編譯資源配方** | 需從原始語料構建 `.gram`、或調用 `opencc_dict` 編譯 `.ocd2`、或由腳本生成 `.dict.yaml` | `rime install` 解包原始語料至 `src/`；若生成 `.dict.yaml` 則在 `build-recipe` 階段寫入 `src/` | 自定義 `build-recipe` 調用外部編譯工具將產物寫入 `stage/`（或交由 `rime_deployer` 編譯至 `stage/build/`） |
+| **自定義編譯資源配方** | 需從原始語料構建 `.gram`、或調用 `opencc_dict` 編譯 `.ocd2`、或由腳本生成 `.dict.yaml` | `rime install` 解包原始語料至 `src/`；若生成 `.dict.yaml` 則在 `build-recipe` 階段寫入 `src/` | 自定義 `build-recipe` 調用外部編譯工具將產物寫入 `stage/`（或交由 `rime build` 編譯至 `stage/build/`） |
 
 ---
 
@@ -97,9 +97,9 @@ flowchart LR
 - 定義標準構建與部署生命周期任務鏈：
   - `tasks.init-workspace`：初始化工作區（如拉取用家個人配置倉庫至 `src/`）。
   - `tasks.update-workspace`：執行 `fill-prescription` $\rightarrow$ `recipes`，按單抓取並安裝全部配方與補丁。
-  - `tasks.build`：調用 `rime_deployer --build ${SOURCE_DIR} ${SOURCE_DIR} ${STAGING_DIR}/build` 完成方案與字典的自包含編譯。
+  - `tasks.build`：調用 `rime build`（以 `SOURCE_DIR` 爲輸入、`STAGING_DIR/build` 爲輸出）完成方案與字典的自包含編譯。
   - `tasks.test`：在 `build` 完成後，針對 `stage/` 工作區運行 `rime test` 驗證構建結果（亦作爲默認目標 `default`）。
-  - `tasks.deploy`：依賴 `test`，測試通過後將 `stage/` 複製同步至 `TARGET_DIR`。
+  - `tasks.deploy`：依賴 `test`，測試通過後調用 `rime deploy` 將 `stage/` 複製同步至 `TARGET_DIR`。
 - 定義單個配方的標準處理模板 `tasks.recipe`：
   依次執行 `download-recipe`（`rime download ${RECIPE}`）$\rightarrow$ `build-recipe`（預留自定義構建鉤子）$\rightarrow$ `install-recipe`（`rime install --no-download ${RECIPE}`）。
 
@@ -107,7 +107,7 @@ flowchart LR
 - **標準配方任務（`Rx-*`）**：
   如 `tasks.Rx-luna-pinyin`，通過 `extend = "recipe"` 繼承標準流程，並以 `env = { RECIPE = "luna-pinyin" }` 指定配方包座標（支持預設簡稱、`owner/repo` 及 `@branch` 分支語法）。此類定義格式統一，可由 `rime new recipe` 自動生成。
 - **參數化功能與補丁任務**：
-  如 [grammar.toml](./grammar.toml) 中的 `tasks.use-grammar`，通過 `dependencies = ["Rx-octagram-config", "Rx-octagram-data-hant"]` 自動拉取配置與模型數據依賴，並調用 `rime_patch ${SCHEMA} grammar "{__include: grammar:/hant}"` 爲調用方指定的方案寫入補丁。
+  如 [grammar.toml](./grammar.toml) 中的 `tasks.use-grammar`，通過 `dependencies = ["Rx-octagram-config", "Rx-octagram-data-hant"]` 自動拉取配置與模型數據依賴，並調用 `rime patch ${SCHEMA} grammar "{__include: grammar:/hant}"` 爲調用方指定的方案寫入補丁。
 
 ### 3. 用家處方層（[user.toml](./user.toml)）
 - 用家個人的入口配置文件（可按用家 GitHub 帳號命名以支持多用家管理）。
@@ -116,15 +116,91 @@ flowchart LR
 
 ---
 
-## 五、後續演進與待辦事項
+## 五、用家交互旅程與調用序列設計（`rime-cli` → `cargo-make`）
+
+### 1. 三層調用架構（當前階段 vs. 未來集成）
+`rime-cli` 與 `rime-make`（`cargo-make` 腳本）共享完全一致的四目錄數據流水線（`DOWNLOAD_DIR`、`SOURCE_DIR`、`STAGING_DIR`、`TARGET_DIR`），按演進路線分爲兩個階段：
+
+1. **階段一（當前優先級——原子子命令與複刻 `rime-install`）**：
+   - `rime-cli` 提供自包含的原子操作子命令（`download`、`install`、`add`、`patch`、`select`、`build`、`test`、`deploy`），按顯式指定的目標執行操作，暫不自動解析傳遞依賴。
+   - 用家可直接按步調用 `rime` 原子命令完成相當於傳統 `/plum/rime-install` 的工作流；同時 `cargo-make` 腳本中的各生命周期任務也直接調用對應的 `rime` 子命令。
+2. **階段二（未來演進——三層協同調度）**：
+   - **高階入口層（`rime-cli` 高階命令）**：用家在含有處方文件（`user.toml` / `recipe.toml`）的工作區調用 `rime build`、`rime deploy` 或指定目標 `rime install luna-pinyin` 時，`rime-cli` 讀取既有處方或動態生成臨時 Makefile。
+   - **依賴與任務編排層（`cargo-make`）**：由 `cargo-make` 解析配方間的依賴圖（`Rx-*`、`customize-*`）及構建生命周期（`download-recipe` → `build-recipe` → `install-recipe` → `build` → `test` → `deploy`）。
+   - **原子執行層（`rime-cli` 子命令）**：`cargo-make` 注入環境變量（`DOWNLOAD_DIR`、`SOURCE_DIR`、`STAGING_DIR`、`TARGET_DIR`），回調 `rime` 子命令完成具體的文件搬運、補丁生成、固件編譯與測試驗證。
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as 用家 (User)
+    participant HighCLI as rime-cli (高階入口 / Future)
+    participant CargoMake as cargo-make (rime.toml / user.toml)
+    participant AtomicCLI as rime-cli (原子子命令 / Current)
+    participant FS as 工作區目錄 (pkg / src / stage / target)
+
+    rect rgb(235, 245, 255)
+    Note over User,FS: 階段一（當前）：單目標直調（複刻 rime-install）
+    User->>AtomicCLI: rime install prelude luna-pinyin
+    AtomicCLI->>FS: 1. git clone/pull -> DOWNLOAD_DIR (pkg/)
+    AtomicCLI->>FS: 2. 解包 *.yaml, essay.txt -> SOURCE_DIR (src/)
+    AtomicCLI->>FS: 3. 安裝 *.gram, opencc/, lua/ -> STAGING_DIR (stage/)
+    User->>AtomicCLI: rime add luna_pinyin && rime patch ...
+    AtomicCLI->>FS: 寫入 *.custom.yaml -> SOURCE_DIR (src/)
+    User->>AtomicCLI: rime build
+    AtomicCLI->>FS: RimeDeploy(user=src, shared=src, staging=stage/build)
+    User->>AtomicCLI: rime test
+    AtomicCLI->>FS: RimeInitialize(user=stage, staging=stage/build) 驗證方案
+    User->>AtomicCLI: rime deploy
+    AtomicCLI->>FS: 同步 STAGING_DIR (stage/) -> TARGET_DIR (target/)
+    end
+
+    rect rgb(245, 240, 255)
+    Note over User,FS: 階段二（未來）：rime-cli 高階入口 -> cargo-make 依賴調度 -> rime-cli 原子操作
+    User->>HighCLI: rime build / rime deploy / rime install <recipe>
+    HighCLI->>CargoMake: 讀取 user.toml 或動態生成配方 Makefile
+    CargoMake->>AtomicCLI: [download-recipe] rime download ${RECIPE}
+    AtomicCLI->>FS: 更新 DOWNLOAD_DIR (pkg/)
+    CargoMake->>CargoMake: [build-recipe] 執行自定義構建步驟（如有）
+    CargoMake->>AtomicCLI: [install-recipe] rime install --no-download ${RECIPE}
+    AtomicCLI->>FS: 分流安裝至 SOURCE_DIR (src/) 與 STAGING_DIR (stage/)
+    CargoMake->>AtomicCLI: [customize-*] rime patch / rime add
+    AtomicCLI->>FS: 生成補丁至 SOURCE_DIR (src/)
+    CargoMake->>AtomicCLI: [build] rime build
+    AtomicCLI->>FS: 編譯 SOURCE_DIR -> STAGING_DIR/build
+    CargoMake->>AtomicCLI: [test] rime test
+    AtomicCLI->>FS: 驗證 STAGING_DIR
+    CargoMake->>AtomicCLI: [deploy] rime deploy
+    AtomicCLI->>FS: 部署 STAGING_DIR -> TARGET_DIR
+    end
+```
+
+### 2. `rime-cli` 子命令與目錄變量映射規約
+
+爲確保 `rime-cli` 單獨運行與被 `cargo-make` 調度時數據流轉完全一致，所有子命令均透過命令行參數（`--download-dir`、`--source-dir`、`--staging-dir`、`--target-dir`）或同名環境變量（`DOWNLOAD_DIR`、`SOURCE_DIR`、`STAGING_DIR`、`TARGET_DIR`）訪問工作區：
+
+| 子命令 | 輸入目錄 | 輸出目錄 | `librime` `RimeTraits` 映射 | 職責說明 |
+| :--- | :--- | :--- | :--- | :--- |
+| `rime download <rx...>` | 遠端 Git 倉庫 | `DOWNLOAD_DIR/<owner>/<repo>` | *（不調用 `librime`）* | 克隆或拉取配方倉庫至 `pkg/<owner>/<repo>`，並檢出 `@branch`（如有指定）。 |
+| `rime install [--no-download] <rx...>` | `DOWNLOAD_DIR/<owner>/<repo>` | `SOURCE_DIR` (`src/`) 及 `STAGING_DIR` (`stage/`) | *（不調用 `librime`）* | 檢出目標分支，將編譯期源碼（`*.yaml`、`essay.txt` 等）複製至 `SOURCE_DIR`，將運行時資源（`*.gram`、`opencc/**`、`lua/**`、`rime.lua`）複製至 `STAGING_DIR`。 |
+| `rime add <schemata...>` | `SOURCE_DIR` | `SOURCE_DIR/default.custom.yaml` | `shared_data_dir = SOURCE_DIR`<br>`user_data_dir = SOURCE_DIR`<br>`staging_dir = STAGING_DIR/build` | 向 `src/default.custom.yaml` 的 `patch/schema_list` 追加輸入方案。 |
+| `rime patch <cfg> <k> <v>` | `SOURCE_DIR` | `SOURCE_DIR/<cfg>.custom.yaml` | `shared_data_dir = SOURCE_DIR`<br>`user_data_dir = SOURCE_DIR`<br>`staging_dir = STAGING_DIR/build` | 調用 `RimeLeversApi` 生成或更新 `src/<cfg>.custom.yaml` 補丁。 |
+| `rime build` | `SOURCE_DIR` (`src/`) | `STAGING_DIR/build` (`stage/build/`) | `shared_data_dir = SOURCE_DIR`<br>`user_data_dir = SOURCE_DIR`<br>`prebuilt_data_dir = STAGING_DIR/build`<br>`staging_dir = STAGING_DIR/build` | 執行 `RimeDeploy()`，讀取 `src/` 源碼與補丁，將 `*.bin` 與合成方案編譯至 `stage/build/`。 |
+| `rime test [schemata...]` | `STAGING_DIR` (`stage/` + `stage/build/`) | *（測試結果）* | `shared_data_dir = STAGING_DIR`<br>`user_data_dir = STAGING_DIR`<br>`prebuilt_data_dir = STAGING_DIR/build`<br>`staging_dir = STAGING_DIR/build` | 針對 `stage/` 啓動 `librime` 會話，驗證方案加載與按鍵序列模擬。 |
+| `rime select <schema>` | `SOURCE_DIR` | `SOURCE_DIR/user.yaml` | `user_data_dir = SOURCE_DIR` | 在 `user.yaml` 中記錄 `var/previously_selected_schema`。 |
+| `rime deploy` | `STAGING_DIR` (`stage/`) | `TARGET_DIR` (`target/`) | *（不調用 `librime`）* | 將 `stage/` 下的運行時資源與 `build/` 二進制產物同步至 `TARGET_DIR`。 |
+
+---
+
+## 六、後續演進與待辦事項
 
 1. **多工作區隔離（`WORKSPACE_DIR`）**：
    - 支持按 Profile 或處方名稱隔離工作區目錄（如 `workspace/squirrel/{src,stage}` 與 `workspace/emacs-rime/{src,stage}`），同時共用頂層 `pkg/` 緩存倉庫，實現多環境並行調製互不覆蓋。
-2. **包內顯式配方文件（`recipe.toml`）規範**：
-   - 定義配方倉庫內置 `recipe.toml` 的元數據與生命周期鉤子規範，使 `rime install` 能自動識別源碼文件與運行時資源文件的映射關係，並在需要時委託 `cargo-make` 執行包內自定義構建腳本。
+2. **包內顯式配方文件（`recipe.toml`）與動態處方生成**：
+   - 定義配方倉庫內置 `recipe.toml` 的元數據與生命周期鉤子規範，使 `rime-cli` 高階命令能動態生成或讀取 Makefile 並委託 `cargo-make` 解析依賴與執行自定義構建腳本。
 3. **`rime-cli` 核心子命令實現**：
-   - `rime download`：解析配方座標（含預設別名、GitHub 倉庫、分支/標籤）並下載至 `DOWNLOAD_DIR`。
-   - `rime install`：按配方類型將編譯期源碼安裝至 `SOURCE_DIR`、運行時資源安裝至 `STAGING_DIR`，並自動解析安裝配方間依賴。
-   - `rime test`：加載 `STAGING_DIR` 中的構建產物，運行標準或自定義輸入法測試用例。
-   - `rime_patch`：生成與手寫格式一致的 `*.custom.yaml` 補丁文件寫入 `SOURCE_DIR`。
-   - `rime new recipe`：掃描現有方案代碼庫並自動生成配方定義文件。
+   - [x] `rime download`：解析配方座標（含預設別名、GitHub 倉庫、分支/標籤）並下載至 `DOWNLOAD_DIR`。
+   - [x] `rime install`：按配方類型將編譯期源碼安裝至 `SOURCE_DIR`、運行時資源安裝至 `STAGING_DIR`（當前階段僅安裝顯式指定的目標配方）。
+   - [x] `rime build` / `rime patch` / `rime add` / `rime select`：對齊 `SOURCE_DIR` 與 `STAGING_DIR/build` 數據流水線。
+   - [x] `rime test`：加載 `STAGING_DIR` 中的構建產物，運行輸入法會話測試。
+   - [x] `rime deploy`：將 `STAGING_DIR` 產物部署至 `TARGET_DIR`。
+   - [ ] `rime new recipe`：掃描現有方案代碼庫並自動生成配方定義文件。
